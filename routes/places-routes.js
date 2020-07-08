@@ -32,6 +32,14 @@ router.patch('/rate/:placeId', [
     check('rating').not().isEmpty(),
 ], placesControllers.updatePlaceById);
 
+router.patch('/comment/:placeId',
+ [
+    check('comment').not().isEmpty(),
+],
+placesControllers.updatePlaceById);
+
+router.delete('/comments/:placeId/:commentId', placesControllers.deleteComment);
+
 router.delete('/:placeId', placesControllers.deletePlace);
 
 module.exports = router;

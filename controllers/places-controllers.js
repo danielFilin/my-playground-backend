@@ -149,7 +149,9 @@ const updatePlaceById = async (req, res, next) => {
             console.log(errors);
             return next(new HttpError('Invalid inputs passed, please check your data', 422));
         }
-        const {title, description, rating, userId} = req.body;
+        const {title, description, rating, userId, comment} = req.body;
+        // the way I pass comment and rating is not correct, I want to send an object with the data with 
+        // some props, but get only the props
         const placeId = req.params.placeId;
         let updatedPlace = await Place.findById(placeId); 
         if (rating) {
@@ -174,6 +176,16 @@ const updatePlaceById = async (req, res, next) => {
             
             await updatedPlace.save();
             calculateAverageRating(placeId);
+        } else if (comment) {
+            console.log(userId);
+            existingUser = await User.findById(userId);
+            console.log(existingUser)
+            const data = {
+                userName: existingUser.name,
+                comment: comment
+            }
+            updatedPlace.comments.push(data);
+            await updatedPlace.save()
         } else {
             updatedPlace.title = title;
             updatedPlace.description = description;
@@ -223,6 +235,29 @@ const deletePlace = async (req, res, next) => {
  
 }
 
+const deleteComment = async (req, res) => {
+    try {
+        const placeId = req.params.placeId;
+        const place = await Place.findById(placeId);
+        if (!place) {
+            throw Error;
+        } 
+        const itemId = req.params.commentId;
+        let comments = place.comments;
+        const filteredComments = comments.filter(comment => comment._id != itemId);
+        place.comments = filteredComments;
+        await place.save();
+        console.log(place.comments);
+        res.status(200).json({
+            comments: place.comments
+        });
+    } catch (err) {
+        const error = new HttpError('no places found for the given id!', 500);
+        return next(error);
+    }
+    
+}
+
 
 exports.getPlaceById = getPlaceById;
 exports.getPlaces = getPlaces;
@@ -230,3 +265,4 @@ exports.getPlacesByUserId = getPlacesByUserId;
 exports.createPlace = createPlace;
 exports.updatePlaceById = updatePlaceById;
 exports.deletePlace = deletePlace;
+exports.deleteComment = deleteComment;

@@ -21,7 +21,11 @@ const placeSchema = new Schema({
         stars: {type: Number, required: false}
     }],
     avgStars: {type: Number, required: false},
-    creator: { type: mongoose.Types.ObjectId, required: true, ref: 'User' }
+    creator: { type: mongoose.Types.ObjectId, required: true, ref: 'User' },
+    comments: [{
+        userName: { type: String, required: true },
+        comment: { type: String, required: true },
+    }]
 });
 
 module.exports = mongoose.model('Place', placeSchema);
