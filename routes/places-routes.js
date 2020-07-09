@@ -23,6 +23,9 @@ router.post(
     check('address').not().isEmpty()
 ], placesControllers.createPlace);
 
+router.post('/pictures/:placeId', fileUpload.single('image'),
+    placesControllers.imageUpload);
+
 router.patch('/:placeId', fileUpload.single('image'), [
     check('title').not().isEmpty(),
     check('description').isLength({min: 5}),

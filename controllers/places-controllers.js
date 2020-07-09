@@ -177,9 +177,7 @@ const updatePlaceById = async (req, res, next) => {
             await updatedPlace.save();
             calculateAverageRating(placeId);
         } else if (comment) {
-            console.log(userId);
             existingUser = await User.findById(userId);
-            console.log(existingUser)
             const data = {
                 userName: existingUser.name,
                 comment: comment
@@ -214,7 +212,7 @@ const deletePlace = async (req, res, next) => {
         if (placeToDelete.creator.id !== req.userData.userId) {
             return next(new HttpError('You are not allowed to delete this place', 401));
         }
-        const imagePath = placeToDelete.image;
+        const imagePath = placeToDelete.image[0];
 
         const currentSession = await mongoose.startSession();
         currentSession.startTransaction();
@@ -255,10 +253,29 @@ const deleteComment = async (req, res) => {
         const error = new HttpError('no places found for the given id!', 500);
         return next(error);
     }
-    
 }
 
+const imageUpload = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        console.log(errors);
+        return next(new HttpError('Invalid inputs passed, please check your data', 422));
+    }
 
+    const placeId = req.params.placeId;
+    let updatedPlace = await Place.findById(placeId); 
+    updatedPlace.image.push(req.file.path);
+    try {
+        await updatedPlace.save();
+        res.status(200).json({
+            message: 'File saved'
+        });
+    } catch (err) {
+        return next(new HttpError('Saving file failed', 500));
+    }
+}
+
+exports.imageUpload = imageUpload;
 exports.getPlaceById = getPlaceById;
 exports.getPlaces = getPlaces;
 exports.getPlacesByUserId = getPlacesByUserId;
